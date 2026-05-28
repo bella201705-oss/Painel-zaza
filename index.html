@@ -1,0 +1,1685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐱 Painel da Zaza</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rosa: #f472b6;
+    --rosa-claro: #fce7f3;
+    --rosa-escuro: #db2777;
+    --lilas: #c084fc;
+    --lilas-claro: #f3e8ff;
+    --verde: #34d399;
+    --verde-claro: #d1fae5;
+    --vermelho: #f87171;
+    --vermelho-claro: #fee2e2;
+    --amarelo: #fbbf24;
+    --amarelo-claro: #fef3c7;
+    --azul: #60a5fa;
+    --azul-claro: #dbeafe;
+    --cinza: #94a3b8;
+    --bg: #fff0f7;
+    --card: #ffffff;
+    --texto: #1e1b2e;
+    --sombra: 0 4px 20px rgba(244,114,182,0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { height: 100%; }
+  body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--texto); }
+
+  .header {
+    background: linear-gradient(135deg, #f472b6 0%, #c084fc 50%, #818cf8 100%);
+    padding: 20px 24px 0;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 4px 20px rgba(244,114,182,0.3);
+  }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+  .header h1 { font-family: 'Fredoka One', cursive; color: white; font-size: 1.6rem; text-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  .header h1 span { font-size: 1.8rem; }
+  .header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .sync-badge {
+    background: rgba(255,255,255,0.25); color: white; font-size: 0.75rem;
+    padding: 4px 12px; border-radius: 20px; font-weight: 700; backdrop-filter: blur(4px);
+  }
+  .sync-badge.ok { background: rgba(52,211,153,0.5); }
+  .sync-badge.error { background: rgba(248,113,113,0.5); }
+  .sync-badge.syncing { background: rgba(251,191,36,0.5); }
+  .btn-header {
+    background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.5);
+    border-radius: 20px; padding: 4px 14px; font-family: 'Nunito', sans-serif;
+    font-weight: 800; font-size: 0.75rem; cursor: pointer; backdrop-filter: blur(4px);
+    transition: background 0.2s; display: flex; align-items: center; gap: 5px;
+  }
+  .btn-header:hover { background: rgba(255,255,255,0.4); }
+
+  .tabs { display: flex; gap: 4px; overflow-x: auto; }
+  .tab {
+    padding: 10px 18px; border-radius: 12px 12px 0 0; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.85rem;
+    background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.8);
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .tab:hover { background: rgba(255,255,255,0.35); color: white; }
+  .tab.active { background: var(--bg); color: var(--rosa-escuro); }
+
+  .content { padding: 20px; max-width: 1200px; margin: 0 auto; padding-bottom: 60px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .card {
+    background: var(--card); border-radius: 16px; padding: 16px;
+    box-shadow: var(--sombra); border: 2px solid transparent;
+    transition: transform 0.2s;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(244,114,182,0.25); }
+  .card .trend { font-size:0.7rem; margin-top:4px; display:flex; align-items:center; gap:3px; }
+  .card .trend.up { color:#059669; }
+  .card .trend.down { color:#dc2626; }
+  .card.rosa { border-color: var(--rosa); }
+  .card.verde { border-color: var(--verde); }
+  .card.vermelho { border-color: var(--vermelho); }
+  .card.lilas { border-color: var(--lilas); }
+  .card.amarelo { border-color: var(--amarelo); }
+  .card .icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .card .label { font-size: 0.72rem; color: var(--cinza); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .card .value { font-family: 'Fredoka One', cursive; font-size: 1.4rem; margin-top: 4px; }
+  .card .sub { font-size: 0.7rem; color: var(--cinza); margin-top: 2px; }
+  .card.rosa .value { color: var(--rosa-escuro); }
+  .card.verde .value { color: #059669; }
+  .card.vermelho .value { color: #dc2626; }
+  .card.lilas .value { color: #7c3aed; }
+  .card.amarelo .value { color: #d97706; }
+
+  .validation-banner {
+    background: var(--verde-claro); border: 2px solid var(--verde);
+    border-radius: 12px; padding: 12px 16px; margin-bottom: 16px;
+    font-size: 0.82rem; font-weight: 700; color: #065f46;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .validation-banner.warn { background: var(--amarelo-claro); border-color: var(--amarelo); color: #92400e; }
+  .validation-banner.error { background: var(--vermelho-claro); border-color: var(--vermelho); color: #991b1b; }
+
+  /* Sheets config banner */
+  .sheets-banner {
+    background: linear-gradient(135deg, #dbeafe, #ede9fe);
+    border: 2px solid #818cf8; border-radius: 14px; padding: 16px 20px;
+    margin-bottom: 20px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+  .sheets-banner .sb-icon { font-size: 1.8rem; }
+  .sheets-banner .sb-text { flex: 1; min-width: 200px; }
+  .sheets-banner .sb-text strong { display: block; font-size: 0.88rem; color: #3730a3; }
+  .sheets-banner .sb-text span { font-size: 0.78rem; color: #6366f1; }
+  .btn-cfg-sheets {
+    background: #4f46e5; color: white; border: none; border-radius: 10px;
+    padding: 8px 18px; font-family: 'Nunito', sans-serif; font-weight: 800;
+    font-size: 0.82rem; cursor: pointer; transition: background 0.2s;
+  }
+  .btn-cfg-sheets:hover { background: #4338ca; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 1000; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: white; border-radius: 20px; padding: 28px; max-width: 520px; width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .modal h3 { font-family: 'Fredoka One', cursive; color: var(--rosa-escuro); font-size: 1.3rem; margin-bottom: 6px; }
+  .modal p { font-size: 0.83rem; color: var(--cinza); margin-bottom: 16px; line-height: 1.5; }
+  .modal input {
+    width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 10px;
+    font-family: 'Nunito', sans-serif; font-size: 0.85rem; margin-bottom: 12px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .modal input:focus { border-color: var(--rosa); }
+  .modal-btns { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+  .btn-modal-cancel {
+    background: #f1f5f9; color: var(--cinza); border: none; border-radius: 10px;
+    padding: 9px 20px; font-family: 'Nunito', sans-serif; font-weight: 700; cursor: pointer;
+  }
+  .btn-modal-save {
+    background: linear-gradient(135deg, var(--rosa), var(--lilas)); color: white;
+    border: none; border-radius: 10px; padding: 9px 20px;
+    font-family: 'Nunito', sans-serif; font-weight: 800; cursor: pointer;
+  }
+  .modal .steps { background: #f8fafc; border-radius: 10px; padding: 12px 16px; margin-bottom: 14px; font-size: 0.8rem; line-height: 1.7; }
+  .modal .steps code { background: #e2e8f0; padding: 1px 5px; border-radius: 4px; font-size: 0.78rem; }
+
+  .form-box {
+    background: var(--card); border-radius: 16px; padding: 20px;
+    box-shadow: var(--sombra); margin-bottom: 20px; border: 2px solid var(--rosa-claro);
+    transition: box-shadow 0.2s;
+  }
+  .form-box:focus-within { box-shadow: 0 4px 24px rgba(244,114,182,0.25); border-color: var(--rosa); }
+  .form-box h3 { font-family: 'Fredoka One', cursive; color: var(--rosa-escuro); font-size: 1.1rem; margin-bottom: 14px; display:flex; align-items:center; gap:8px; }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group label { font-size: 0.75rem; font-weight: 700; color: var(--cinza); text-transform: uppercase; }
+  .form-group input, .form-group select {
+    padding: 9px 12px; border: 2px solid #e2e8f0; border-radius: 10px;
+    font-family: 'Nunito', sans-serif; font-size: 0.88rem; background: #fafafa;
+    transition: border-color 0.2s; outline: none;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--rosa); background: white; }
+  .btn-add {
+    background: linear-gradient(135deg, var(--rosa), var(--lilas));
+    color: white; border: none; border-radius: 10px; padding: 10px 20px;
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.88rem;
+    cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    margin-top: 4px; align-self: flex-end;
+  }
+  .btn-add:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(244,114,182,0.4); }
+  .btn-add:active { transform: scale(0.97); }
+  .hidden { display: none !important; }
+
+  .period-bar {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+    background: var(--card); padding: 10px 16px; border-radius: 14px; box-shadow: var(--sombra);
+    flex-wrap: wrap;
+  }
+  .period-bar .period-label { font-family: 'Fredoka One', cursive; color: var(--rosa-escuro); font-size: 1rem; min-width: 130px; text-align: center; }
+  .btn-nav {
+    background: var(--rosa-claro); border: none; border-radius: 8px; width: 32px; height: 32px;
+    cursor: pointer; font-size: 1rem; color: var(--rosa-escuro); font-weight: 900;
+    transition: background 0.2s;
+  }
+  .btn-nav:hover { background: var(--rosa); color: white; }
+  .btn-all {
+    margin-left: auto; background: var(--lilas-claro); border: none; border-radius: 8px;
+    padding: 6px 14px; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.78rem;
+    color: #6d28d9; cursor: pointer;
+  }
+  .btn-all:hover { background: var(--lilas); color: white; }
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-bar input, .filter-bar select {
+    padding: 7px 12px; border: 2px solid #e2e8f0; border-radius: 10px;
+    font-family: 'Nunito', sans-serif; font-size: 0.82rem; outline: none;
+    transition: border-color 0.2s; min-width: 140px;
+  }
+  .filter-bar input:focus, .filter-bar select:focus { border-color: var(--rosa); }
+
+  .table-wrap { overflow-x: auto; border-radius: 14px; box-shadow: var(--sombra); }
+  table { width: 100%; border-collapse: collapse; background: var(--card); }
+  thead th {
+    background: linear-gradient(135deg, var(--rosa-claro), var(--lilas-claro));
+    padding: 10px 12px; font-size: 0.75rem; font-weight: 800; color: var(--rosa-escuro);
+    text-transform: uppercase; letter-spacing: 0.04em; text-align: left;
+  }
+  tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s; }
+  tbody tr:hover { background: #fdf4ff; }
+  tbody td { padding: 9px 12px; font-size: 0.83rem; }
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; font-weight: 700;
+  }
+  .badge.entrada { background: var(--verde-claro); color: #065f46; }
+  .badge.saida { background: var(--vermelho-claro); color: #991b1b; }
+  .badge.ticket { background: var(--amarelo-claro); color: #92400e; }
+  .badge.cartao { background: var(--azul-claro); color: #1e40af; }
+  .btn-del {
+    background: var(--vermelho-claro); color: #dc2626; border: none; border-radius: 6px;
+    width: 26px; height: 26px; cursor: pointer; font-size: 0.85rem; font-weight: 700;
+    transition: background 0.2s;
+  }
+  .btn-del:hover { background: var(--vermelho); color: white; }
+  .ap-row { background: #fff5f5 !important; }
+  .ap-row td:first-child::before { content: '🏠 '; }
+
+  /* Empty states fofos */
+  .empty-state { text-align:center; padding:40px 20px; color:var(--cinza); }
+  .empty-state .es-icon { font-size:3rem; margin-bottom:12px; animation: float 3s ease-in-out infinite; }
+  .empty-state .es-title { font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--rosa-escuro); margin-bottom:6px; }
+  .empty-state .es-sub { font-size:0.82rem; }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+  /* Tags de categoria coloridas */
+  .cat-tag { display:inline-block; padding:2px 8px; border-radius:20px; font-size:0.7rem; font-weight:700; }
+  .cat-alimentacao { background:#fef3c7; color:#92400e; }
+  .cat-transporte { background:#dbeafe; color:#1e40af; }
+  .cat-saude { background:#d1fae5; color:#065f46; }
+  .cat-lazer { background:#f3e8ff; color:#6d28d9; }
+  .cat-compras { background:#fce7f3; color:#be185d; }
+  .cat-outros { background:#f1f5f9; color:#475569; }
+
+  /* Tooltip de parcela */
+  .parcela-badge { background:#ede9fe; color:#5b21b6; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:20px; }
+
+  /* Linha separadora de mês na tabela */
+  .month-separator td { background:linear-gradient(135deg,var(--rosa-claro),var(--lilas-claro)) !important; font-family:'Fredoka One',cursive; color:var(--rosa-escuro); font-size:0.78rem; padding:6px 12px !important; }
+
+  .fatura-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .fatura-card {
+    background: linear-gradient(135deg, #1e1b4b, #312e81);
+    border-radius: 16px; padding: 20px; color: white; position: relative; overflow: hidden;
+  }
+  .fatura-card::before {
+    content: ''; position: absolute; top: -30px; right: -30px;
+    width: 100px; height: 100px; border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+  }
+  .fatura-card.next { background: linear-gradient(135deg, #4c1d95, #6d28d9); }
+  .fatura-card .fc-label { font-size: 0.7rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; }
+  .fatura-card .fc-val { font-family: 'Fredoka One', cursive; font-size: 1.8rem; margin: 6px 0; }
+  .fatura-card .fc-date { font-size: 0.78rem; opacity: 0.8; }
+  .fatura-card .fc-count { font-size: 0.72rem; margin-top: 8px; opacity: 0.7; }
+
+  .fatura-card .fc-pago { font-size:0.75rem; margin-top:6px; background:rgba(52,211,153,0.25); border-radius:8px; padding:4px 8px; display:inline-block; }
+  .fatura-card .fc-restante { font-size:0.75rem; margin-top:4px; opacity:0.8; }
+  .fatura-card .fc-pago-total { color: #86efac; font-weight:800; }
+  .pgto-bar { background:#f8fafc; border-radius:12px; padding:14px 16px; margin-bottom:14px; border:2px solid #e2e8f0; }
+  .pgto-bar-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px; }
+  .pgto-bar-header strong { font-family:'Fredoka One',cursive; color:#1e1b4b; font-size:0.95rem; }
+  .pgto-bar-header span { font-size:0.8rem; color:var(--cinza); }
+  .pgto-progress { background:#e2e8f0; border-radius:20px; height:8px; overflow:hidden; margin-bottom:10px; }
+  .pgto-progress-fill { height:100%; border-radius:20px; background:linear-gradient(90deg,#34d399,#059669); transition:width 0.4s; }
+  .pgto-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .pgto-row input { flex:1; min-width:120px; padding:8px 12px; border:2px solid #e2e8f0; border-radius:10px; font-family:'Nunito',sans-serif; font-size:0.85rem; outline:none; transition:border-color 0.2s; }
+  .pgto-row input:focus { border-color:var(--verde); }
+  .btn-pagar { background:linear-gradient(135deg,#34d399,#059669); color:white; border:none; border-radius:10px; padding:9px 18px; font-family:'Nunito',sans-serif; font-weight:800; font-size:0.82rem; cursor:pointer; white-space:nowrap; }
+  .btn-pagar:hover { opacity:0.9; }
+  .pgto-historico { margin-top:10px; }
+  .pgto-item { display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; padding:4px 0; border-bottom:1px solid #f1f5f9; color:var(--cinza); }
+  .pgto-item:last-child { border:none; }
+  .pgto-item .pgto-val { font-weight:800; color:#059669; }
+  .btn-del-pgto { background:var(--vermelho-claro); color:#dc2626; border:none; border-radius:4px; width:20px; height:20px; cursor:pointer; font-size:0.7rem; font-weight:700; }
+
+  .ticket-wallet {
+    background: linear-gradient(135deg, #78350f, #d97706);
+    border-radius: 16px; padding: 20px; color: white; margin-bottom: 20px;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  }
+  .ticket-wallet .tw-label { font-size: 0.75rem; opacity: 0.8; text-transform: uppercase; font-weight: 700; }
+  .ticket-wallet .tw-val { font-family: 'Fredoka One', cursive; font-size: 2rem; }
+  .ticket-wallet .tw-sub { font-size: 0.78rem; opacity: 0.75; margin-top: 4px; }
+  .btn-credit-ticket {
+    background: rgba(255,255,255,0.25); color: white; border: 2px solid rgba(255,255,255,0.5);
+    border-radius: 10px; padding: 8px 16px; font-family: 'Nunito', sans-serif;
+    font-weight: 800; font-size: 0.82rem; cursor: pointer;
+  }
+  .btn-credit-ticket:hover { background: rgba(255,255,255,0.4); }
+
+  .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .chart-box { background: var(--card); border-radius: 16px; padding: 16px; box-shadow: var(--sombra); height: 300px; position: relative; }
+  .chart-box h4 { font-family: 'Fredoka One', cursive; color: var(--rosa-escuro); margin-bottom: 12px; font-size: 0.95rem; }
+  canvas { max-width: 100%; max-height: 240px; }
+
+  @media(max-width: 600px) {
+    .header h1 { font-size: 1.2rem; }
+    .tab { padding: 8px 12px; font-size: 0.78rem; }
+    .cards-grid { grid-template-columns: repeat(2, 1fr); }
+    .content { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== MODAL CONFIGURAÇÃO SHEETS ===== -->
+<div class="modal-overlay" id="modalSheets">
+  <div class="modal">
+    <h3>☁️ Conectar Google Sheets</h3>
+    <p>Cole a URL do seu Google Apps Script. Os dados serão sincronizados automaticamente em todas as sessões.</p>
+    <div class="steps">
+      <strong>Como obter a URL:</strong><br>
+      1. Abra sua planilha → <code>Extensões → Apps Script</code><br>
+      2. Cole o código do script e salve<br>
+      3. <code>Implantar → Nova implantação → Aplicativo da Web</code><br>
+      4. "Quem tem acesso" → <strong>Qualquer pessoa</strong> → Implantar<br>
+      5. Copie e cole a URL aqui ↓
+    </div>
+    <input type="text" id="sheetsUrlInput" placeholder="https://script.google.com/macros/s/..." />
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-modal-save" onclick="saveSheetsCfg()">💾 Salvar e Conectar</button>
+    </div>
+  </div>
+</div>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1><span>🐱</span> Painel da Zaza</h1>
+      <div id="header-date" style="color:rgba(255,255,255,0.75);font-size:0.75rem;font-weight:600;margin-top:2px"></div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-header" onclick="exportarExcel()">📥 Excel</button>
+      <button class="btn-header" onclick="syncManual()">🔄 Sync</button>
+      <button class="btn-header" onclick="openModal()">☁️ Sheets</button>
+      <span class="sync-badge ok" id="syncBadge">✓ Local</span>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('painel')">📊 Painel</button>
+    <button class="tab" onclick="switchTab('cartao')">💳 Cartão</button>
+    <button class="tab" onclick="switchTab('ticket')">🍽️ Ticket</button>
+    <button class="tab" onclick="switchTab('historico')">📋 Histórico</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- ===== PAINEL PRINCIPAL ===== -->
+  <div class="tab-panel active" id="tab-painel">
+
+    <div id="validationBanner" class="validation-banner" style="display:none"></div>
+
+    <div class="cards-grid">
+      <div class="card verde">
+        <div class="icon">💰</div>
+        <div class="label">Entradas</div>
+        <div class="value" id="kpi-entradas">R$ 0,00</div>
+        <div class="sub" id="kpi-entradas-count">0 lançamentos</div>
+      </div>
+      <div class="card vermelho">
+        <div class="icon">💸</div>
+        <div class="label">Saídas</div>
+        <div class="value" id="kpi-saidas">R$ 0,00</div>
+        <div class="sub" id="kpi-saidas-count">0 lançamentos</div>
+      </div>
+      <div class="card rosa">
+        <div class="icon">🐱</div>
+        <div class="label">Saldo Banco</div>
+        <div class="value" id="kpi-saldo">R$ 0,00</div>
+        <div class="sub">Conta principal</div>
+      </div>
+      <div class="card amarelo">
+        <div class="icon">🍽️</div>
+        <div class="label">Saldo Ticket</div>
+        <div class="value" id="kpi-ticket">R$ 0,00</div>
+        <div class="sub">Separado do banco</div>
+      </div>
+      <div class="card lilas">
+        <div class="icon">🏠</div>
+        <div class="label">Gastos AP</div>
+        <div class="value" id="kpi-ap">R$ 0,00</div>
+        <div class="sub" id="kpi-ap-count">0 itens</div>
+      </div>
+      <div class="card rosa">
+        <div class="icon">💳</div>
+        <div class="label">Fatura Atual</div>
+        <div class="value" id="kpi-fatura">R$ 0,00</div>
+        <div class="sub" id="kpi-fatura-venc">vence —</div>
+      </div>
+      <div class="card verde">
+        <div class="icon">💵</div>
+        <div class="label">Disponível</div>
+        <div class="value" id="kpi-disponivel">R$ 0,00</div>
+        <div class="sub">Banco − fatura</div>
+      </div>
+    </div>
+
+    <div class="form-box">
+      <h3>✨ Novo Lançamento</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Data</label>
+          <input type="date" id="f-data">
+        </div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="f-tipo" onchange="onTipoChange()">
+            <option value="Saída">Saída</option>
+            <option value="Entrada">Entrada</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Descrição</label>
+          <input type="text" id="f-desc" placeholder="Ex: Mercado">
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <select id="f-cat">
+            <option>ALIMENTAÇÃO</option>
+            <option>APARTAMENTO</option>
+            <option>TRANSPORTE</option>
+            <option>SAÚDE</option>
+            <option>LAZER</option>
+            <option>SALÁRIO</option>
+            <option>COMPRAS</option>
+            <option>DÍZIMO</option>
+            <option>MÃE</option>
+            <option>Doação Gabi</option>
+            <option>Outros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Forma Pgto</label>
+          <select id="f-pgto" onchange="onPgtoChange()">
+            <option>PIX</option>
+            <option>Débito SANTANDER</option>
+            <option>Débito NUBANK</option>
+            <option>Dinheiro</option>
+            <option>Crédito</option>
+            <option>Ticket Restaurante</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Valor (R$)</label>
+          <input type="number" id="f-valor" placeholder="0,00" min="0" step="0.01">
+        </div>
+        <div class="form-group hidden" id="g-cartao">
+          <label>Cartão</label>
+          <select id="f-cartao">
+            <option>Santander</option>
+            <option>Nubank</option>
+          </select>
+        </div>
+        <div class="form-group hidden" id="g-parcelas">
+          <label>Parcelas</label>
+          <input type="number" id="f-parcelas" value="1" min="1" max="60">
+        </div>
+        <div class="form-group" style="align-self: flex-end;">
+          <button class="btn-add" onclick="addLancamento()">＋ Adicionar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="period-bar">
+      <button class="btn-nav" onclick="changePeriod(-1)">‹</button>
+      <span class="period-label" id="periodLabel">Todos</span>
+      <button class="btn-nav" onclick="changePeriod(1)">›</button>
+      <button class="btn-all" onclick="showAll()">Ver Tudo</button>
+    </div>
+    <div class="filter-bar">
+      <input type="text" id="busca" placeholder="🔍 Buscar..." oninput="renderTable()">
+      <select id="filtTipo" onchange="renderTable()">
+        <option value="">Todos os tipos</option>
+        <option>Entrada</option>
+        <option>Saída</option>
+      </select>
+      <select id="filtCat" onchange="renderTable()">
+        <option value="">Todas as categorias</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th><th>Descrição</th><th>Categoria</th>
+            <th>Pagamento</th><th>Tipo</th><th>Valor</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <div id="table-totals" style="background:var(--card);border-radius:0 0 14px 14px;padding:10px 16px;display:flex;gap:20px;flex-wrap:wrap;font-size:0.82rem;font-weight:700;box-shadow:var(--sombra);margin-bottom:20px;border-top:2px solid var(--rosa-claro)"></div>
+
+    <div class="charts-grid" style="margin-top:20px">
+      <div class="chart-box">
+        <h4>🐾 Gastos por Categoria</h4>
+        <canvas id="chartCat" height="220"></canvas>
+      </div>
+      <div class="chart-box">
+        <h4>💳 Forma de Pagamento</h4>
+        <canvas id="chartPgto" height="220"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CARTÃO DE CRÉDITO ===== -->
+  <div class="tab-panel" id="tab-cartao">
+    <div class="fatura-grid">
+      <div class="fatura-card">
+        <div class="fc-label">💳 Fatura Atual</div>
+        <div class="fc-val" id="cc-atual">R$ 0,00</div>
+        <div class="fc-date" id="cc-atual-venc">Vence — </div>
+        <div class="fc-count" id="cc-atual-count">0 compras</div>
+        <div id="cc-atual-pgto-info"></div>
+      </div>
+      <div class="fatura-card next">
+        <div class="fc-label">📅 Próxima Fatura</div>
+        <div class="fc-val" id="cc-prox">R$ 0,00</div>
+        <div class="fc-date" id="cc-prox-venc">Vence — </div>
+        <div class="fc-count" id="cc-prox-count">0 compras</div>
+      </div>
+    </div>
+
+    <div class="pgto-bar" id="pgto-bar-atual">
+      <div class="pgto-bar-header">
+        <strong>💰 Pagamentos da Fatura Atual</strong>
+        <span id="pgto-resumo">Nenhum pagamento registrado</span>
+      </div>
+      <div class="pgto-progress"><div class="pgto-progress-fill" id="pgto-progress-fill" style="width:0%"></div></div>
+      <div class="pgto-row">
+        <input type="number" id="pgto-valor" placeholder="Valor pago (R$)" min="0" step="0.01">
+        <input type="date" id="pgto-data">
+        <button class="btn-pagar" onclick="registrarPagamento()">✓ Registrar Pagamento</button>
+      </div>
+      <div class="pgto-historico" id="pgto-historico"></div>
+    </div>
+
+    <div class="form-box">
+      <h3>💳 Nova Compra no Cartão</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Data da Compra</label>
+          <input type="date" id="cc-data">
+        </div>
+        <div class="form-group">
+          <label>Cartão</label>
+          <select id="cc-cartao">
+            <option>Santander</option>
+            <option>Nubank</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Descrição</label>
+          <input type="text" id="cc-desc" placeholder="Ex: Amazon">
+        </div>
+        <div class="form-group">
+          <label>Categoria</label>
+          <select id="cc-cat">
+            <option>ALIMENTAÇÃO</option>
+            <option>APARTAMENTO</option>
+            <option>TRANSPORTE</option>
+            <option>SAÚDE</option>
+            <option>LAZER</option>
+            <option>COMPRAS</option>
+            <option>Outros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Valor Total (R$)</label>
+          <input type="number" id="cc-valor" placeholder="0,00" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label>Parcelas</label>
+          <input type="number" id="cc-parcelas" value="1" min="1" max="60">
+        </div>
+        <div class="form-group" style="align-self:flex-end">
+          <button class="btn-add" onclick="addCartao()">＋ Adicionar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Data Compra</th><th>Descrição</th><th>Cartão</th><th>Categoria</th><th>Parcela</th><th>Fatura</th><th>Valor Parcela</th><th></th></tr>
+        </thead>
+        <tbody id="ccTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== TICKET RESTAURANTE ===== -->
+  <div class="tab-panel" id="tab-ticket">
+    <div class="ticket-wallet">
+      <div>
+        <div class="tw-label">🍽️ Carteira Ticket</div>
+        <div class="tw-val" id="tk-saldo">R$ 0,00</div>
+        <div class="tw-sub">Independente do saldo bancário 🐾</div>
+      </div>
+      <div>
+        <div class="tw-label">Gasto este mês</div>
+        <div class="tw-val" id="tk-gasto">R$ 0,00</div>
+        <div class="tw-sub" id="tk-count">0 usos</div>
+      </div>
+    </div>
+
+    <div class="form-box">
+      <h3>➕ Creditar Ticket</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Data</label>
+          <input type="date" id="tk-cred-data">
+        </div>
+        <div class="form-group">
+          <label>Descrição</label>
+          <input type="text" id="tk-cred-desc" placeholder="Ex: Crédito maio, Saldo anterior...">
+        </div>
+        <div class="form-group">
+          <label>Valor (R$)</label>
+          <input type="number" id="tk-cred-valor" placeholder="0,00" min="0" step="0.01">
+        </div>
+        <div class="form-group" style="align-self:flex-end">
+          <button class="btn-add" style="background:linear-gradient(135deg,#34d399,#059669)" onclick="creditarTicketLivre()">➕ Creditar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-box">
+      <h3>🍽️ Usar Ticket Restaurante</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Data</label>
+          <input type="date" id="tk-data">
+        </div>
+        <div class="form-group">
+          <label>Descrição</label>
+          <input type="text" id="tk-desc" placeholder="Ex: Almoço restaurante">
+        </div>
+        <div class="form-group">
+          <label>Valor (R$)</label>
+          <input type="number" id="tk-valor" placeholder="0,00" min="0" step="0.01">
+        </div>
+        <div class="form-group" style="align-self:flex-end">
+          <button class="btn-add" onclick="usarTicket()">− Usar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th>Saldo Após</th><th></th></tr>
+        </thead>
+        <tbody id="tkTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== HISTÓRICO COMPLETO ===== -->
+  <div class="tab-panel" id="tab-historico">
+    <div class="form-box" style="padding:14px 18px">
+      <h3>📋 Histórico Completo — Todas as Fontes</h3>
+      <p style="font-size:0.82rem;color:var(--cinza);margin-top:4px">Painel + Cartão + Ticket unificados.</p>
+    </div>
+    <div class="cards-grid">
+      <div class="card verde"><div class="icon">📥</div><div class="label">Total Entradas</div><div class="value" id="h-entradas">R$ 0,00</div></div>
+      <div class="card vermelho"><div class="icon">📤</div><div class="label">Total Saídas</div><div class="value" id="h-saidas">R$ 0,00</div></div>
+      <div class="card rosa"><div class="icon">🏦</div><div class="label">Saldo Banco</div><div class="value" id="h-saldo">R$ 0,00</div></div>
+      <div class="card amarelo"><div class="icon">🍽️</div><div class="label">Consumo Ticket</div><div class="value" id="h-ticket">R$ 0,00</div></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Data</th><th>Descrição</th><th>Fonte</th><th>Tipo</th><th>Valor</th></tr>
+        </thead>
+        <tbody id="histTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+// ============================================================
+// DADOS SEED — exportados do localStorage em 18/05/2026
+// ============================================================
+// Dados zerados — pronto para lançar do zero
+const SEED_DATA = {"lancamentos":[],"cartao":[],"pagamentos":[],"ticket":[],"saldoTicket":0,"meta":{"version":5,"updatedAt":"2026-05-19T00:00:00","source":"zero"}};
+
+// ============================================================
+// CONFIG SHEETS
+// ============================================================
+const SHEETS_CFG_KEY = 'zaza_sheets_url';
+const DB_KEY = 'zaza_financeiro_v5';
+
+function getSheetsUrl() {
+  return 'https://script.google.com/macros/s/AKfycbwr80g_PQBdNOS29y0-11ZQ6ACzf5Buv_Sq6mRCAaAwbBfaiYYrtKlCQ5NJjV4hJj__/exec';
+}
+function setSheetsUrl(url) {
+  // URL is hardcoded — no config needed
+}
+
+// ============================================================
+// STORAGE LAYER
+// ============================================================
+function loadDB() {
+  // 1. Try localStorage v4 (current session data)
+  try {
+    const raw = localStorage.getItem(DB_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const count = (parsed.lancamentos||[]).length + (parsed.cartao||[]).length + (parsed.ticket||[]).length;
+      if (count > 0) {
+        console.log('[Zaza] localStorage v4 — ' + count + ' registros');
+        return parsed;
+      }
+    }
+  } catch(e) {}
+
+  // Arquivo zerado — começa do zero
+  console.log('[Zaza] Banco zerado, pronto para novos lançamentos');
+  const seed = JSON.parse(JSON.stringify(SEED_DATA));
+  saveDB(seed);
+  return seed;
+}
+
+function saveDB(db) {
+  try {
+    db.meta = db.meta || {};
+    db.meta.updatedAt = new Date().toISOString();
+    localStorage.setItem(DB_KEY, JSON.stringify(db));
+    setSyncBadge('local');
+  } catch(e) {
+    setSyncBadge('error');
+    alert('⚠️ Erro ao salvar dados localmente!');
+  }
+}
+
+function setSyncBadge(state, msg) {
+  const b = document.getElementById('syncBadge');
+  if (!b) return;
+  const states = {
+    ok:      { cls: 'ok',      txt: '☁️ Sheets OK' },
+    local:   { cls: 'ok',      txt: '✓ Salvo'      },
+    syncing: { cls: 'syncing', txt: '⏳ Sincronizando...' },
+    error:   { cls: 'error',   txt: '⚠️ Offline'   },
+  };
+  const s = states[state] || states.local;
+  b.className = 'sync-badge ' + s.cls;
+  b.textContent = msg || s.txt;
+}
+
+// ============================================================
+// GOOGLE SHEETS SYNC
+// ============================================================
+async function syncFromSheets(silent = true) {
+  const url = getSheetsUrl();
+  if (!url) return;
+  setSyncBadge('syncing');
+  try {
+    const r    = await fetch(url + '?action=readAll');
+    const data = await r.json();
+    if (!data || !data.ok) throw new Error(data?.error || 'Resposta inválida');
+
+    // Full replace — Sheets é a fonte de verdade
+    db.lancamentos = (data.lancamentos || []).map(r => ({ ...r, valor: parseFloat(r.valor) || 0 }));
+    db.cartao      = (data.cartao      || []).map(r => ({
+      ...r,
+      valorTotal:    parseFloat(r.valorTotal)    || 0,
+      valorParcela:  parseFloat(r.valorParcela)  || 0,
+      parcelaNum:    parseInt(r.parcelaNum)       || 1,
+      totalParcelas: parseInt(r.totalParcelas)    || 1,
+    }));
+    db.ticket      = (data.ticket || []).map(r => ({
+      ...r, valor: parseFloat(r.valor) || 0, saldoApos: parseFloat(r.saldoApos) || 0,
+    }));
+    db.saldoTicket = parseFloat(data.saldoTicket) || 0;
+
+    saveDB(db);
+    renderAll();
+    setSyncBadge('ok');
+    console.log('[Zaza] Sync OK —', db.lancamentos.length, 'lanç,', db.cartao.length, 'CC,', db.ticket.length, 'ticket');
+  } catch(e) {
+    console.warn('[Zaza] Sheets sync falhou:', e);
+    setSyncBadge('error', '⚠️ Sheets offline');
+    if (!silent) alert('❌ Não foi possível conectar ao Google Sheets.\n\nErro: ' + e.message);
+  }
+}
+
+async function pushToSheets(type, itemOrRows, extra = {}) {
+  const url = getSheetsUrl();
+  if (!url) return;
+  try {
+    let body;
+    if (type === 'cartao') {
+      // itemOrRows is an array of parcelas
+      body = { action: 'add', type, rows: Array.isArray(itemOrRows) ? itemOrRows : [itemOrRows] };
+    } else {
+      body = { action: 'add', type, item: itemOrRows, ...extra };
+    }
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    setSyncBadge('ok');
+  } catch(e) {
+    console.warn('[Zaza] Push Sheets falhou:', e);
+    setSyncBadge('error', '⚠️ Sem Sheets');
+  }
+}
+
+async function deleteFromSheets(type, id, extra = {}) {
+  const url = getSheetsUrl();
+  if (!url) return;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', type, id, ...extra }),
+    });
+  } catch(e) { console.warn('[Zaza] Delete Sheets falhou:', e); }
+}
+
+async function syncManual() {
+  setSyncBadge('syncing');
+  await syncFromSheets(false);
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal() {
+  // URL já está configurada — sincroniza manual
+  syncManual();
+}
+function closeModal() {}
+async function saveSheetsCfg() {}
+
+// ============================================================
+// PERIOD
+// ============================================================
+let currentPeriod = null;
+
+function changePeriod(dir) {
+  const now = new Date();
+  if (!currentPeriod) currentPeriod = { year: now.getFullYear(), month: now.getMonth() };
+  else {
+    currentPeriod.month += dir;
+    if (currentPeriod.month > 11) { currentPeriod.month = 0; currentPeriod.year++; }
+    if (currentPeriod.month < 0) { currentPeriod.month = 11; currentPeriod.year--; }
+  }
+  updatePeriodLabel();
+  renderAll();
+}
+function showAll() { currentPeriod = null; updatePeriodLabel(); renderAll(); }
+function updatePeriodLabel() {
+  const el = document.getElementById('periodLabel');
+  if (!currentPeriod) { el.textContent = 'Todos'; return; }
+  const m = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  el.textContent = m[currentPeriod.month] + ' ' + currentPeriod.year;
+}
+function inPeriod(dateStr) {
+  if (!currentPeriod || !dateStr) return true;
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.getFullYear() === currentPeriod.year && d.getMonth() === currentPeriod.month;
+}
+
+// ============================================================
+// FORM HELPERS
+// ============================================================
+function onTipoChange() {
+  const t = document.getElementById('f-tipo').value;
+  document.getElementById('g-cartao').classList.toggle('hidden', t !== 'Saída');
+  onPgtoChange();
+}
+function onPgtoChange() {
+  const p = document.getElementById('f-pgto').value;
+  const isCredito = p === 'Crédito';
+  document.getElementById('g-cartao').classList.toggle('hidden', !isCredito);
+  document.getElementById('g-parcelas').classList.toggle('hidden', !isCredito);
+}
+function genId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
+function setDefaultDates() {
+  const today = new Date().toISOString().split('T')[0];
+  ['f-data','cc-data','tk-data'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.value) el.value = today;
+  });
+}
+
+// ============================================================
+// CREDIT CARD LOGIC
+// ============================================================
+function getFaturaVencimento(dataCompraStr) {
+  const d = new Date(dataCompraStr + 'T00:00:00');
+  const day = d.getDate();
+  let vencAno = d.getFullYear();
+  let vencMes = d.getMonth();
+  // Fecha dia 3: compra no dia 3 ou depois vai para a próxima fatura
+  if (day >= 3) {
+    vencMes += 1;
+    if (vencMes > 11) { vencMes = 0; vencAno++; }
+  }
+  return new Date(vencAno, vencMes, 9).toISOString().split('T')[0];
+}
+
+function addCartao() {
+  const data = document.getElementById('cc-data').value;
+  const cartao = document.getElementById('cc-cartao').value;
+  const desc = document.getElementById('cc-desc').value.trim();
+  const cat = document.getElementById('cc-cat').value;
+  const valor = parseFloat(document.getElementById('cc-valor').value);
+  const parcelas = parseInt(document.getElementById('cc-parcelas').value) || 1;
+
+  if (!data || !desc || isNaN(valor) || valor <= 0) { alert('🐱 Preencha todos os campos!'); return; }
+
+  const valorParcela = parseFloat((valor / parcelas).toFixed(2));
+  const groupId = genId();
+  const baseFatura = getFaturaVencimento(data);
+
+  for (let i = 0; i < parcelas; i++) {
+    let faturaVenc = baseFatura;
+    if (i > 0) {
+      const base = new Date(baseFatura + 'T00:00:00');
+      base.setMonth(base.getMonth() + i);
+      faturaVenc = base.toISOString().split('T')[0];
+    }
+    const entry = {
+      id: genId(), groupId,
+      dataCompra: data, cartao, descricao: desc, categoria: cat,
+      valorTotal: valor, valorParcela,
+      parcelaNum: i + 1, totalParcelas: parcelas,
+      faturaVenc, criadoEm: new Date().toISOString()
+    };
+    db.cartao.push(entry);
+    pushToSheets('cartao', entry);
+  }
+
+  saveDB(db);
+  document.getElementById('cc-desc').value = '';
+  document.getElementById('cc-valor').value = '';
+  document.getElementById('cc-parcelas').value = '1';
+  renderAll();
+}
+
+function deleteCartaoGroup(groupId) {
+  if (!confirm('🗑️ Remover todas as parcelas desta compra?')) return;
+  const removed = db.cartao.filter(c => c.groupId === groupId);
+  removed.forEach(c => deleteFromSheets('cartao', c.id));
+  db.cartao = db.cartao.filter(c => c.groupId !== groupId);
+  saveDB(db);
+  renderAll();
+}
+
+// ============================================================
+// TICKET RESTAURANTE
+// ============================================================
+function creditarTicket() {
+  const entry = {
+    id: genId(),
+    data: new Date().toISOString().split('T')[0],
+    descricao: 'Crédito Ticket Restaurante',
+    tipo: 'credito', valor: 926.86, saldoApos: 0,
+    criadoEm: new Date().toISOString()
+  };
+  db.ticket.push(entry);
+  recalcTicketBalances();
+  saveDB(db);
+  pushToSheets('ticket', entry, { saldoTicket: db.saldoTicket });
+  renderAll();
+}
+
+// Versão livre com campos personalizados (usada pelo botão Creditar)
+function creditarTicketLivre() {
+  const data  = document.getElementById('tk-cred-data')?.value  || new Date().toISOString().split('T')[0];
+  const desc  = document.getElementById('tk-cred-desc')?.value?.trim() || 'Crédito Ticket';
+  const valor = parseFloat(document.getElementById('tk-cred-valor')?.value) || 926.86;
+
+  if (valor <= 0 || isNaN(valor)) { alert('Informe um valor válido!'); return; }
+
+  const entry = {
+    id: genId(),
+    data,
+    descricao: desc,
+    tipo: 'credito',
+    valor,
+    saldoApos: 0,
+    criadoEm: new Date().toISOString()
+  };
+  db.ticket.push(entry);
+  recalcTicketBalances();
+  saveDB(db);
+  pushToSheets('ticket', entry, { saldoTicket: db.saldoTicket });
+
+  // Limpa campos
+  const descEl = document.getElementById('tk-cred-desc');
+  const valEl  = document.getElementById('tk-cred-valor');
+  if (descEl) descEl.value = '';
+  if (valEl)  valEl.value  = '';
+
+  renderAll();
+  alert('✅ Ticket creditado! Saldo: R$ ' + fmtMoney(db.saldoTicket));
+}
+
+function usarTicket() {
+  const data = document.getElementById('tk-data').value;
+  const desc = document.getElementById('tk-desc').value.trim();
+  const valor = parseFloat(document.getElementById('tk-valor').value);
+
+  if (!data || !desc || isNaN(valor) || valor <= 0) { alert('🐱 Preencha todos os campos!'); return; }
+
+  const saldoAtual = calcSaldoTicket();
+  if (valor > saldoAtual) { alert(`⚠️ Saldo insuficiente! Saldo: R$ ${fmtMoney(saldoAtual)}`); return; }
+
+  const entry = { id: genId(), data, descricao: desc, tipo: 'uso', valor, saldoApos: 0, criadoEm: new Date().toISOString() };
+  db.ticket.push(entry);
+  recalcTicketBalances();
+  saveDB(db);
+  pushToSheets('ticket', entry, { saldoTicket: db.saldoTicket });
+  document.getElementById('tk-desc').value = '';
+  document.getElementById('tk-valor').value = '';
+  renderAll();
+}
+
+function calcSaldoTicket() {
+  let saldo = 0;
+  [...db.ticket].sort((a,b) => a.criadoEm.localeCompare(b.criadoEm)).forEach(t => {
+    saldo += t.tipo === 'credito' ? t.valor : -t.valor;
+  });
+  return Math.max(0, parseFloat(saldo.toFixed(2)));
+}
+
+function recalcTicketBalances() {
+  let saldo = 0;
+  [...db.ticket].sort((a,b) => a.criadoEm.localeCompare(b.criadoEm)).forEach(t => {
+    saldo += t.tipo === 'credito' ? t.valor : -t.valor;
+    saldo = Math.max(0, saldo);
+    t.saldoApos = parseFloat(saldo.toFixed(2));
+  });
+  db.saldoTicket = saldo;
+}
+
+function deleteTicket(id) {
+  if (!confirm('🗑️ Remover este registro do ticket?')) return;
+  deleteFromSheets('ticket', id, { saldoTicket: db.saldoTicket });
+  db.ticket = db.ticket.filter(t => t.id !== id);
+  recalcTicketBalances();
+  saveDB(db);
+  renderAll();
+}
+
+// ============================================================
+// MAIN LANCAMENTO
+// ============================================================
+function addLancamento() {
+  const data = document.getElementById('f-data').value;
+  const tipo = document.getElementById('f-tipo').value;
+  const desc = document.getElementById('f-desc').value.trim();
+  const cat = document.getElementById('f-cat').value;
+  const pgto = document.getElementById('f-pgto').value;
+  const valor = parseFloat(document.getElementById('f-valor').value);
+
+  if (!data || !desc || isNaN(valor) || valor <= 0) { alert('🐱 Preencha todos os campos!'); return; }
+
+  if (pgto === 'Crédito') {
+    document.getElementById('cc-data').value = data;
+    document.getElementById('cc-cartao').value = document.getElementById('f-cartao').value;
+    document.getElementById('cc-desc').value = desc;
+    document.getElementById('cc-cat').value = cat;
+    document.getElementById('cc-valor').value = valor;
+    document.getElementById('cc-parcelas').value = document.getElementById('f-parcelas').value;
+    addCartao();
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-valor').value = '';
+    return;
+  }
+
+  if (pgto === 'Ticket Restaurante') {
+    document.getElementById('tk-data').value = data;
+    document.getElementById('tk-desc').value = desc;
+    document.getElementById('tk-valor').value = valor;
+    usarTicket();
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-valor').value = '';
+    return;
+  }
+
+  const item = {
+    id: genId(), data, tipo, descricao: desc,
+    categoria: cat, pagamento: pgto,
+    valor: parseFloat(valor.toFixed(2)),
+    criadoEm: new Date().toISOString()
+  };
+  db.lancamentos.push(item);
+
+  const d = new Date(data + 'T00:00:00');
+  currentPeriod = { year: d.getFullYear(), month: d.getMonth() };
+  updatePeriodLabel();
+
+  saveDB(db);
+  pushToSheets('lancamento', item);
+  document.getElementById('f-desc').value = '';
+  document.getElementById('f-valor').value = '';
+  renderAll();
+}
+
+function deleteLancamento(id) {
+  if (!confirm('🗑️ Remover este lançamento?')) return;
+  deleteFromSheets('lancamento', id);
+  db.lancamentos = db.lancamentos.filter(l => l.id !== id);
+  saveDB(db);
+  renderAll();
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function fmtMoney(v) {
+  return parseFloat(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  const p = d.split('-');
+  return `${p[2]}/${p[1]}/${p[0]}`;
+}
+const AP_KEYWORDS = ['apartamento','ap','itbi','entrada do ap','juros de obras','condomínio','iptu'];
+function isAP(item) {
+  const s = (item.descricao + ' ' + (item.categoria||'')).toLowerCase();
+  return AP_KEYWORDS.some(k => s.includes(k));
+}
+
+// ============================================================
+// COMPETÊNCIA FINANCEIRA
+// Regra: salário recebido nos dias 25-31 pertence ao MÊS SEGUINTE
+// ============================================================
+function getCompetencia(lancamento) {
+  const d = new Date(lancamento.data + 'T00:00:00');
+  const isSalario = (lancamento.categoria||'').toUpperCase().includes('SALÁRIO') ||
+                    (lancamento.descricao||'').toUpperCase().includes('SALÁRIO');
+  if (isSalario && d.getDate() >= 25) {
+    // Competência = mês seguinte
+    const comp = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+    return { year: comp.getFullYear(), month: comp.getMonth() };
+  }
+  return { year: d.getFullYear(), month: d.getMonth() };
+}
+
+function inPeriodByCompetencia(lancamento) {
+  if (!currentPeriod) return true;
+  const comp = getCompetencia(lancamento);
+  return comp.year === currentPeriod.year && comp.month === currentPeriod.month;
+}
+
+// ============================================================
+// VALIDATION
+// ============================================================
+function runValidation() {
+  const banner = document.getElementById('validationBanner');
+  // Saldo bancário TOTAL (sem período, sem ticket, sem cartão)
+  const lncAll = db.lancamentos.filter(l => !l.sourceCartaoId);
+  const entradasTotal = lncAll.filter(l => l.tipo === 'Entrada').reduce((s,l) => s + l.valor, 0);
+  const saidasTotal = lncAll.filter(l => l.tipo === 'Saída').reduce((s,l) => s + l.valor, 0);
+  const saldoBanco = entradasTotal - saidasTotal;
+
+  // Fatura atual (para saldo disponível)
+  const today = new Date().toISOString().split('T')[0];
+  const atualVenc = getFaturaVencimento(today);
+  const faturaAtual = db.cartao.filter(c => c.faturaVenc === atualVenc).reduce((s,c) => s + c.valorParcela, 0);
+  const saldoDisponivel = saldoBanco - faturaAtual;
+
+  banner.className = 'validation-banner';
+  banner.innerHTML = `✅ Saldo banco: <strong>R$ ${fmtMoney(saldoBanco)}</strong> | Fatura atual: <strong>R$ ${fmtMoney(faturaAtual)}</strong> | Disponível: <strong style="color:${saldoDisponivel>=0?'#059669':'#dc2626'}">R$ ${fmtMoney(saldoDisponivel)}</strong> | Ticket: <strong>R$ ${fmtMoney(db.saldoTicket)}</strong>`;
+  banner.style.display = 'flex';
+}
+
+// ============================================================
+// RENDER KPIs — usa competência correta
+// ============================================================
+function renderKPIs() {
+  // Filtra por competência (salário dia 25+ vai para mês seguinte)
+  const lnc = db.lancamentos.filter(l => !l.sourceCartaoId && inPeriodByCompetencia(l));
+
+  // Entradas bancárias do período (exclui ticket — ticket tem carteira própria)
+  const entradas = lnc.filter(l => l.tipo === 'Entrada').reduce((s,l) => s + l.valor, 0);
+
+  // Saídas bancárias do período (exclui pagamentos de cartão que são saídas da conta, não do banco direto)
+  const saidas = lnc.filter(l => l.tipo === 'Saída').reduce((s,l) => s + l.valor, 0);
+
+  const saldo = entradas - saidas;
+
+  document.getElementById('kpi-entradas').textContent = 'R$ ' + fmtMoney(entradas);
+  document.getElementById('kpi-entradas-count').textContent = lnc.filter(l=>l.tipo==='Entrada').length + ' lançamentos';
+  document.getElementById('kpi-saidas').textContent = 'R$ ' + fmtMoney(saidas);
+  document.getElementById('kpi-saidas-count').textContent = lnc.filter(l=>l.tipo==='Saída').length + ' lançamentos';
+  document.getElementById('kpi-saldo').textContent = 'R$ ' + fmtMoney(saldo);
+  document.getElementById('kpi-saldo').style.color = saldo >= 0 ? '#059669' : '#dc2626';
+
+  // Gastos AP no período
+  const apItems = lnc.filter(isAP);
+  document.getElementById('kpi-ap').textContent = 'R$ ' + fmtMoney(apItems.reduce((s,l)=>s+l.valor,0));
+  document.getElementById('kpi-ap-count').textContent = apItems.length + ' itens';
+
+  // Ticket: SEMPRE separado, nunca soma no banco
+  document.getElementById('kpi-ticket').textContent = 'R$ ' + fmtMoney(db.saldoTicket);
+
+  // Fatura atual do cartão
+  const today = new Date().toISOString().split('T')[0];
+  const atualVenc = getFaturaVencimento(today);
+  const faturaAtual = db.cartao.filter(c => c.faturaVenc === atualVenc);
+  const totalFatura = faturaAtual.reduce((s,c)=>s+c.valorParcela,0);
+  document.getElementById('kpi-fatura').textContent = 'R$ ' + fmtMoney(totalFatura);
+  document.getElementById('kpi-fatura-venc').textContent = 'vence ' + fmtDate(atualVenc);
+
+  // Saldo disponível (banco - fatura atual do cartão)
+  const lncAllBanco = db.lancamentos.filter(l => !l.sourceCartaoId);
+  const entradasBanco = lncAllBanco.filter(l => l.tipo === 'Entrada').reduce((s,l) => s + l.valor, 0);
+  const saidasBanco = lncAllBanco.filter(l => l.tipo === 'Saída').reduce((s,l) => s + l.valor, 0);
+  const saldoBancoTotal = entradasBanco - saidasBanco;
+  const saldoDisponivel = saldoBancoTotal - totalFatura;
+  const elDisp = document.getElementById('kpi-disponivel');
+  if (elDisp) {
+    elDisp.textContent = 'R$ ' + fmtMoney(saldoDisponivel);
+    elDisp.style.color = saldoDisponivel >= 0 ? '#059669' : '#dc2626';
+  }
+}
+
+// ============================================================
+// RENDER TABLE — filtra por competência
+// ============================================================
+function renderTable() {
+  const busca = document.getElementById('busca').value.toLowerCase();
+  const filtTipo = document.getElementById('filtTipo').value;
+  const filtCat = document.getElementById('filtCat').value;
+
+  const cats = [...new Set(db.lancamentos.map(l=>l.categoria).filter(Boolean))].sort();
+  const catSel = document.getElementById('filtCat');
+  const current = catSel.value;
+  catSel.innerHTML = '<option value="">Todas as categorias</option>' + cats.map(c=>`<option${c===current?' selected':''}>${c}</option>`).join('');
+
+  const filtered = db.lancamentos.filter(l => {
+    if (l.sourceCartaoId) return false;
+    // Usa competência para filtrar (salário dia 25+ aparece no mês seguinte)
+    if (!inPeriodByCompetencia(l)) return false;
+    if (filtTipo && l.tipo !== filtTipo) return false;
+    if (filtCat && l.categoria !== filtCat) return false;
+    if (busca && !(l.descricao+l.categoria+l.pagamento).toLowerCase().includes(busca)) return false;
+    return true;
+  }).sort((a,b) => b.data.localeCompare(a.data));
+
+  // Totalizador
+  const totalEntradas = filtered.filter(l=>l.tipo==='Entrada').reduce((s,l)=>s+l.valor,0);
+  const totalSaidas = filtered.filter(l=>l.tipo==='Saída').reduce((s,l)=>s+l.valor,0);
+  const saldoFiltrado = totalEntradas - totalSaidas;
+  const totalsEl = document.getElementById('table-totals');
+  if (totalsEl) {
+    totalsEl.innerHTML = `
+      <span style="color:#059669">✅ Entradas: R$ ${fmtMoney(totalEntradas)}</span>
+      <span style="color:#dc2626">❌ Saídas: R$ ${fmtMoney(totalSaidas)}</span>
+      <span style="color:${saldoFiltrado>=0?'#7c3aed':'#dc2626'}">🐱 Saldo: R$ ${fmtMoney(saldoFiltrado)}</span>
+      <span style="color:var(--cinza)">${filtered.length} lançamentos</span>`;
+  }
+  const tbody = document.getElementById('tableBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--cinza)">🐾 Nenhum lançamento encontrado</td></tr>`;
+    return;
+  }
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="es-icon">🐾</div><div class="es-title">Nenhum lançamento aqui!</div><div class="es-sub">Adicione seu primeiro lançamento acima ✨</div></div></td></tr>`;
+    return;
+  }
+
+  const catClass = cat => {
+    const c = (cat||'').toLowerCase();
+    if(c.includes('aliment')) return 'cat-alimentacao';
+    if(c.includes('transport')) return 'cat-transporte';
+    if(c.includes('saúde')||c.includes('saude')||c.includes('remédio')) return 'cat-saude';
+    if(c.includes('lazer')) return 'cat-lazer';
+    if(c.includes('compra')) return 'cat-compras';
+    return 'cat-outros';
+  };
+
+  let lastMonth = null;
+  const rows = [];
+  filtered.forEach(l => {
+    const d = new Date(l.data + 'T00:00:00');
+    const monthKey = `${d.getFullYear()}-${d.getMonth()}`;
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    if (monthKey !== lastMonth) {
+      lastMonth = monthKey;
+      rows.push(`<tr class="month-separator"><td colspan="7">📅 ${months[d.getMonth()]} ${d.getFullYear()}</td></tr>`);
+    }
+    const isSalarioProximo = (() => {
+      const isSal = (l.categoria||'').toUpperCase().includes('SALÁRIO') || (l.descricao||'').toUpperCase().includes('SALÁRIO');
+      return isSal && d.getDate() >= 25;
+    })();
+    const competenciaTag = isSalarioProximo
+      ? `<span style="background:#dbeafe;color:#1e40af;font-size:0.65rem;font-weight:700;padding:1px 6px;border-radius:10px;margin-left:4px">Comp.→</span>`
+      : '';
+    rows.push(`
+    <tr class="${isAP(l) ? 'ap-row' : ''}">
+      <td style="font-size:0.8rem;white-space:nowrap">${fmtDate(l.data)}</td>
+      <td>${l.descricao}${competenciaTag}</td>
+      <td><span class="cat-tag ${catClass(l.categoria)}">${l.categoria || '—'}</span></td>
+      <td style="font-size:0.78rem;color:var(--cinza)">${l.pagamento || '—'}</td>
+      <td><span class="badge ${l.tipo === 'Entrada' ? 'entrada' : 'saida'}">${l.tipo}</span></td>
+      <td style="font-weight:800;color:${l.tipo==='Entrada'?'#059669':'#dc2626'};white-space:nowrap">
+        ${l.tipo==='Entrada'?'+':'−'} R$ ${fmtMoney(l.valor)}
+      </td>
+      <td><button class="btn-del" onclick="deleteLancamento('${l.id}')">🗑</button></td>
+    </tr>`);
+  });
+  tbody.innerHTML = rows.join('');
+}
+
+// ============================================================
+// PAGAMENTOS DE FATURA
+// ============================================================
+function registrarPagamento() {
+  const today = new Date().toISOString().split('T')[0];
+  const atualVenc = getFaturaVencimento(today);
+  const valor = parseFloat(document.getElementById('pgto-valor').value);
+  const data = document.getElementById('pgto-data').value || today;
+
+  if (isNaN(valor) || valor <= 0) { alert('🐱 Informe o valor pago!'); return; }
+
+  const totalFatura = db.cartao.filter(c => c.faturaVenc === atualVenc).reduce((s,c) => s + c.valorParcela, 0);
+  const totalPago = getPagamentosFatura(atualVenc);
+  if (valor > (totalFatura - totalPago) + 0.01) {
+    if (!confirm(`⚠️ O valor R$ ${fmtMoney(valor)} é maior que o restante (R$ ${fmtMoney(totalFatura - totalPago)}). Confirma?`)) return;
+  }
+
+  if (!db.pagamentos) db.pagamentos = [];
+  const entry = { id: genId(), faturaVenc: atualVenc, valor, data, criadoEm: new Date().toISOString() };
+  db.pagamentos.push(entry);
+  saveDB(db);
+  pushToSheets('pagamento', entry);
+
+  document.getElementById('pgto-valor').value = '';
+  renderAll();
+}
+
+function getPagamentosFatura(faturaVenc) {
+  if (!db.pagamentos) return 0;
+  return db.pagamentos.filter(p => p.faturaVenc === faturaVenc).reduce((s,p) => s + p.valor, 0);
+}
+
+function deletePagamento(id) {
+  if (!confirm('🗑️ Remover este pagamento?')) return;
+  db.pagamentos = db.pagamentos.filter(p => p.id !== id);
+  saveDB(db);
+  renderAll();
+}
+
+// ============================================================
+// RENDER CARTÃO
+// ============================================================
+function renderCartaoTab() {
+  const today = new Date().toISOString().split('T')[0];
+  const atualVenc = getFaturaVencimento(today);
+  const proxVencDate = new Date(atualVenc + 'T00:00:00');
+  proxVencDate.setMonth(proxVencDate.getMonth() + 1);
+  const proxVenc = proxVencDate.toISOString().split('T')[0];
+
+  const fatAtual = db.cartao.filter(c => c.faturaVenc === atualVenc);
+  const fatProx = db.cartao.filter(c => c.faturaVenc === proxVenc);
+  const totalAtual = fatAtual.reduce((s,c) => s + c.valorParcela, 0);
+  const totalProx = fatProx.reduce((s,c) => s + c.valorParcela, 0);
+
+  const totalPagoAtual = getPagamentosFatura(atualVenc);
+  const restanteAtual = Math.max(0, totalAtual - totalPagoAtual);
+  const pctPago = totalAtual > 0 ? Math.min(100, (totalPagoAtual / totalAtual) * 100) : 0;
+
+  // Fatura card
+  document.getElementById('cc-atual').textContent = 'R$ ' + fmtMoney(totalAtual);
+  document.getElementById('cc-atual-venc').textContent = 'Vence ' + fmtDate(atualVenc);
+  document.getElementById('cc-atual-count').textContent = fatAtual.length + ' compra(s)';
+
+  // Pagamento info dentro do card
+  const pgtoInfo = document.getElementById('cc-atual-pgto-info');
+  if (totalPagoAtual > 0) {
+    pgtoInfo.innerHTML = `<div class="fc-pago">✓ Pago: <span class="fc-pago-total">R$ ${fmtMoney(totalPagoAtual)}</span></div>
+    <div class="fc-restante">Restante: R$ ${fmtMoney(restanteAtual)}</div>`;
+  } else {
+    pgtoInfo.innerHTML = '';
+  }
+
+  // Barra de progresso
+  document.getElementById('pgto-progress-fill').style.width = pctPago + '%';
+  document.getElementById('pgto-resumo').textContent = totalPagoAtual > 0
+    ? `Pago R$ ${fmtMoney(totalPagoAtual)} de R$ ${fmtMoney(totalAtual)} · Restante R$ ${fmtMoney(restanteAtual)}`
+    : 'Nenhum pagamento registrado';
+
+  // Histórico de pagamentos
+  const pgtos = (db.pagamentos||[]).filter(p => p.faturaVenc === atualVenc).sort((a,b) => b.criadoEm.localeCompare(a.criadoEm));
+  const pgtoHist = document.getElementById('pgto-historico');
+  pgtoHist.innerHTML = pgtos.length === 0 ? '' : pgtos.map(p => `
+    <div class="pgto-item">
+      <span>${fmtDate(p.data)} — Pagamento parcial</span>
+      <span class="pgto-val">R$ ${fmtMoney(p.valor)}</span>
+      <button class="btn-del-pgto" onclick="deletePagamento('${p.id}')">🗑</button>
+    </div>`).join('');
+
+  // Set default date for payment
+  const pgtoDataEl = document.getElementById('pgto-data');
+  if (pgtoDataEl && !pgtoDataEl.value) pgtoDataEl.value = today;
+
+  document.getElementById('cc-prox').textContent = 'R$ ' + fmtMoney(totalProx);
+  document.getElementById('cc-prox-venc').textContent = 'Vence ' + fmtDate(proxVenc);
+  document.getElementById('cc-prox-count').textContent = fatProx.length + ' compra(s)';
+
+  const allSorted = [...db.cartao].sort((a,b) => a.faturaVenc.localeCompare(b.faturaVenc));
+  const tbody = document.getElementById('ccTableBody');
+  if (allSorted.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="es-icon">💳</div><div class="es-title">Nenhuma compra no cartão!</div><div class="es-sub">Adicione suas compras parceladas acima 🛍️</div></div></td></tr>`;
+    return;
+  }
+  const seen = new Set();
+  tbody.innerHTML = allSorted.map(c => {
+    const isFirst = !seen.has(c.groupId);
+    if (isFirst) seen.add(c.groupId);
+    const isCurrent = c.faturaVenc === atualVenc;
+    const isNext = c.faturaVenc === proxVenc;
+    return `<tr style="${isCurrent?'background:#eef2ff':isNext?'background:#f5f3ff':''}">
+      <td>${fmtDate(c.dataCompra)}</td>
+      <td>${c.descricao}</td>
+      <td><span class="badge cartao">${c.cartao}</span></td>
+      <td>${c.categoria}</td>
+      <td style="text-align:center">${c.parcelaNum}/${c.totalParcelas}</td>
+      <td>${fmtDate(c.faturaVenc)} ${isCurrent?'⭐':''}${isNext?'📅':''}</td>
+      <td style="font-weight:700;color:#1e40af">R$ ${fmtMoney(c.valorParcela)}</td>
+      <td>${isFirst ? `<button class="btn-del" onclick="deleteCartaoGroup('${c.groupId}')">🗑</button>` : ''}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
+// RENDER TICKET
+// ============================================================
+function renderTicketTab() {
+  recalcTicketBalances();
+  document.getElementById('tk-saldo').textContent = 'R$ ' + fmtMoney(db.saldoTicket);
+
+  const now = new Date();
+  const usosMes = db.ticket.filter(t => {
+    if (t.tipo !== 'uso') return false;
+    const d = new Date(t.data + 'T00:00:00');
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+  const gastoMes = usosMes.reduce((s,t) => s + t.valor, 0);
+  document.getElementById('tk-gasto').textContent = 'R$ ' + fmtMoney(gastoMes);
+  document.getElementById('tk-count').textContent = usosMes.length + ' uso(s) este mês';
+
+  const sorted = [...db.ticket].sort((a,b) => b.criadoEm.localeCompare(a.criadoEm));
+  const tbody = document.getElementById('tkTableBody');
+  if (sorted.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="es-icon">🍽️</div><div class="es-title">Nenhum uso de ticket ainda!</div><div class="es-sub">Crédite seu saldo e registre seus almoços 🥗</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = sorted.map(t => `
+    <tr>
+      <td>${fmtDate(t.data)}</td>
+      <td>${t.descricao}</td>
+      <td><span class="badge ${t.tipo === 'credito' ? 'entrada' : 'ticket'}">${t.tipo === 'credito' ? '＋ Crédito' : '− Uso'}</span></td>
+      <td style="font-weight:700;color:${t.tipo==='credito'?'#059669':'#d97706'}">
+        ${t.tipo==='credito'?'+':'−'} R$ ${fmtMoney(t.valor)}
+      </td>
+      <td>R$ ${fmtMoney(t.saldoApos)}</td>
+      <td><button class="btn-del" onclick="deleteTicket('${t.id}')">🗑</button></td>
+    </tr>`).join('');
+}
+
+// ============================================================
+// RENDER HISTÓRICO — fontes separadas, sem mistura
+// ============================================================
+function renderHistorico() {
+  const all = [];
+
+  // BANCO: apenas lançamentos manuais (sem sourceCartaoId, sem ticket)
+  db.lancamentos.filter(l => !l.sourceCartaoId).forEach(l => {
+    all.push({ data: l.data, descricao: l.descricao, fonte: 'Banco', tipo: l.tipo, valor: l.valor });
+  });
+
+  // CARTÃO: impacta apenas fatura, nunca saldo bancário direto
+  db.cartao.forEach(c => {
+    all.push({ data: c.faturaVenc, descricao: `[${c.cartao}] ${c.descricao} (${c.parcelaNum}/${c.totalParcelas})`, fonte: 'Cartão', tipo: 'Saída', valor: c.valorParcela });
+  });
+
+  // TICKET: carteira 100% separada
+  db.ticket.forEach(t => {
+    all.push({ data: t.data, descricao: t.descricao, fonte: 'Ticket', tipo: t.tipo === 'credito' ? 'Crédito' : 'Uso', valor: t.valor });
+  });
+
+  all.sort((a,b) => b.data.localeCompare(a.data));
+
+  // KPIs do histórico: banco separado de ticket
+  const entradasBanco = all.filter(a => a.fonte === 'Banco' && a.tipo === 'Entrada').reduce((s,a) => s+a.valor, 0);
+  const saidasBanco = all.filter(a => a.fonte === 'Banco' && a.tipo === 'Saída').reduce((s,a) => s+a.valor, 0);
+  const ticketUso = all.filter(a => a.fonte === 'Ticket' && a.tipo === 'Uso').reduce((s,a) => s+a.valor, 0);
+
+  document.getElementById('h-entradas').textContent = 'R$ ' + fmtMoney(entradasBanco);
+  document.getElementById('h-saidas').textContent = 'R$ ' + fmtMoney(saidasBanco);
+  document.getElementById('h-saldo').textContent = 'R$ ' + fmtMoney(entradasBanco - saidasBanco);
+  document.getElementById('h-ticket').textContent = 'R$ ' + fmtMoney(ticketUso);
+
+  const tbody = document.getElementById('histTableBody');
+  tbody.innerHTML = all.length === 0
+    ? `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--cinza)">📋 Nenhum histórico</td></tr>`
+    : all.map(a => `
+    <tr>
+      <td>${fmtDate(a.data)}</td>
+      <td>${a.descricao}</td>
+      <td><span class="badge ${a.fonte==='Banco'?'entrada':a.fonte==='Cartão'?'cartao':'ticket'}">${a.fonte}</span></td>
+      <td><span class="badge ${a.tipo==='Entrada'||a.tipo==='Crédito'?'entrada':'saida'}">${a.tipo}</span></td>
+      <td style="font-weight:700;color:${a.tipo==='Entrada'||a.tipo==='Crédito'?'#059669':a.fonte==='Ticket'?'#d97706':'#dc2626'}">
+        R$ ${fmtMoney(a.valor)}
+      </td>
+    </tr>`).join('');
+}
+
+// ============================================================
+// CHARTS
+// ============================================================
+let chartCat = null, chartPgto = null;
+
+function renderCharts() {
+  const filtered = db.lancamentos.filter(l => !l.sourceCartaoId && l.tipo === 'Saída' && inPeriodByCompetencia(l));
+
+  const byCat = {};
+  filtered.forEach(l => { byCat[l.categoria] = (byCat[l.categoria]||0) + l.valor; });
+  const catLabels = Object.keys(byCat);
+  const catVals = catLabels.map(k => byCat[k]);
+  const colors = ['#f472b6','#c084fc','#818cf8','#60a5fa','#34d399','#fbbf24','#f87171','#a78bfa','#fb923c','#4ade80'];
+
+  if (chartCat) chartCat.destroy();
+  chartCat = new Chart(document.getElementById('chartCat').getContext('2d'), {
+    type: 'doughnut',
+    data: { labels: catLabels, datasets: [{ data: catVals, backgroundColor: colors, borderWidth: 3, borderColor: '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Nunito', size: 11 }, boxWidth: 12 } } } }
+  });
+
+  const byPgto = {};
+  filtered.forEach(l => { byPgto[l.pagamento] = (byPgto[l.pagamento]||0) + l.valor; });
+  const pgtoLabels = Object.keys(byPgto);
+  const pgtoVals = pgtoLabels.map(k => byPgto[k]);
+
+  if (chartPgto) chartPgto.destroy();
+  chartPgto = new Chart(document.getElementById('chartPgto').getContext('2d'), {
+    type: 'bar',
+    data: { labels: pgtoLabels, datasets: [{ data: pgtoVals, backgroundColor: colors, borderRadius: 8, borderSkipped: false }] },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { y: { ticks: { callback: v => 'R$' + fmtMoney(v), font: { family: 'Nunito', size: 10 } } }, x: { ticks: { font: { family: 'Nunito', size: 10 } } } },
+      maintainAspectRatio: false
+    }
+  });
+}
+
+// ============================================================
+// RENDER ALL
+// ============================================================
+function renderAll() {
+  recalcTicketBalances();
+  renderKPIs();
+  renderTable();
+  renderCartaoTab();
+  renderTicketTab();
+  renderHistorico();
+  renderCharts();
+  runValidation();
+}
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const tabs = ['painel','cartao','ticket','historico'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+// ============================================================
+// EXPORT EXCEL
+// ============================================================
+function exportarExcel() {
+  if (typeof XLSX === 'undefined') { alert('⏳ Carregando biblioteca...'); return; }
+  const wb = XLSX.utils.book_new();
+
+  const lancRows = db.lancamentos.filter(l => !l.sourceCartaoId).sort((a,b) => a.data.localeCompare(b.data)).map(l => ({
+    'Data': fmtDate(l.data), 'Descrição': l.descricao, 'Categoria': l.categoria||'',
+    'Forma de Pagamento': l.pagamento||'', 'Tipo': l.tipo, 'Valor (R$)': l.valor,
+    'Apartamento?': isAP(l) ? 'Sim' : 'Não'
+  }));
+  if (lancRows.length === 0) lancRows.push({ 'Data': 'Sem registros' });
+  const ws1 = XLSX.utils.json_to_sheet(lancRows);
+  ws1['!cols'] = [14,35,20,22,10,14,14].map(w => ({ wch: w }));
+  XLSX.utils.book_append_sheet(wb, ws1, '📊 Painel');
+
+  const ccRows = [...db.cartao].sort((a,b) => a.faturaVenc.localeCompare(b.faturaVenc)).map(c => ({
+    'Data da Compra': fmtDate(c.dataCompra), 'Cartão': c.cartao, 'Descrição': c.descricao,
+    'Categoria': c.categoria, 'Valor Total (R$)': c.valorTotal,
+    'Parcela': `${c.parcelaNum}/${c.totalParcelas}`, 'Valor Parcela (R$)': c.valorParcela,
+    'Vencimento Fatura': fmtDate(c.faturaVenc)
+  }));
+  if (ccRows.length === 0) ccRows.push({ 'Data da Compra': 'Sem registros' });
+  const ws2 = XLSX.utils.json_to_sheet(ccRows);
+  ws2['!cols'] = [14,12,30,15,16,10,18,18].map(w => ({ wch: w }));
+  XLSX.utils.book_append_sheet(wb, ws2, '💳 Cartão');
+
+  const tkRows = [...db.ticket].sort((a,b) => a.data.localeCompare(b.data)).map(t => ({
+    'Data': fmtDate(t.data), 'Descrição': t.descricao,
+    'Tipo': t.tipo === 'credito' ? 'Crédito' : 'Uso',
+    'Valor (R$)': t.valor, 'Saldo Após (R$)': t.saldoApos
+  }));
+  if (tkRows.length === 0) tkRows.push({ 'Data': 'Sem registros' });
+  const ws3 = XLSX.utils.json_to_sheet(tkRows);
+  ws3['!cols'] = [14,35,10,14,16].map(w => ({ wch: w }));
+  XLSX.utils.book_append_sheet(wb, ws3, '🍽️ Ticket');
+
+  XLSX.writeFile(wb, `Financeiro_Zaza_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+let db;
+document.addEventListener('DOMContentLoaded', () => {
+  db = loadDB();
+  // Remove legacy mirror entries
+  db.lancamentos = db.lancamentos.filter(l => !l.sourceCartaoId);
+  // Always sync from Google Sheets on load
+  syncFromSheets(true);
+  if (!db.cartao) db.cartao = [];
+  if (!db.pagamentos) db.pagamentos = [];
+  if (!db.ticket) db.ticket = [];
+  if (typeof db.saldoTicket !== 'number') db.saldoTicket = 0;
+
+  setDefaultDates();
+  recalcTicketBalances();
+  renderAll();
+
+  // Auto-navigate to current month
+  const now = new Date();
+  currentPeriod = { year: now.getFullYear(), month: now.getMonth() };
+  updatePeriodLabel();
+  renderAll();
+
+  // Sync from Sheets silently
+  syncFromSheets(true);
+
+  // Header date
+  const hd = document.getElementById('header-date');
+  if (hd) {
+    const days = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+    const months = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const now = new Date();
+    hd.textContent = `${days[now.getDay()]}, ${now.getDate()} de ${months[now.getMonth()]} de ${now.getFullYear()} 🌸`;
+  }
+});
+</script>
+</body>
+</html>
